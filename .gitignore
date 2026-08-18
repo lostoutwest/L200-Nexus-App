@@ -1,0 +1,9 @@
+.dart_tool/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+oracleJdk-26/
+*.iml
+
+# Preserved locally for reference; the standalone firmware repository is canonical.
+archive/
