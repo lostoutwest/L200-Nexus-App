@@ -11,6 +11,27 @@ Flutter dashboard for the L200 Nexus ACP vehicle controller.
 - Persistent level-position tilt calibration
 - GPS location display
 
+## Canonical hardware pinout
+
+The companion ESP32 firmware uses this current configuration:
+
+| Function | ESP32 pin |
+| :--- | :---: |
+| Lock relay (active-low) | GPIO16 |
+| Unlock relay (active-low) | GPIO17 |
+| Ignition relay (active-low) | GPIO18 |
+| Starter relay (active-low) | GPIO19 |
+| Headlights relay (active-low) | GPIO21 |
+| WS2812B RGB data | GPIO22 |
+| Engine-running input | GPIO34 |
+| Battery-sense input | GPIO35 |
+| Door-trigger input | GPIO32 |
+| Ignition input | GPIO33 |
+| TILS I²C SDA | GPIO25 |
+| TILS I²C SCL | GPIO26 |
+
+Relay outputs are inactive HIGH. The ESP32 has no onboard GPS receiver; the dashboard’s GPS comes from the phone, while the operating system may improve its position using nearby Wi-Fi or Bluetooth signals.
+
 ## Development
 
 ```text
