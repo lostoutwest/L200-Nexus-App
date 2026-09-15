@@ -1,38 +1,46 @@
 # L200 ESP32 V2 Protocol
 
-The ESP32 runs both BLE and WiFi AP simultaneously.
+The ESP32-C6 runs both BLE and WiFi AP simultaneously.
 
 WiFi AP: `L200-NEXUS` (password: `L200Nexus`)
 BLE name: `L200-NEXUS`
 
 ## Canonical firmware pinout
 
-The standalone firmware uses active-low relay outputs on GPIO16 (lock), GPIO17 (unlock), GPIO18 (ignition), GPIO19 (starter), and GPIO21 (headlights). RGB data is GPIO22. Vehicle inputs are GPIO34 (engine), GPIO35 (battery), GPIO32 (door), and GPIO33 (ignition). The TILS sensor uses I²C SDA GPIO25, SCL GPIO26, address `0x53`.
+The standalone firmware uses active-low relay outputs on GPIO18 (lock), GPIO19 (unlock), GPIO20 (ignition), GPIO21 (starter), and GPIO22 (headlights). RGB data is GPIO23. Vehicle inputs are GPIO0 (battery ADC), GPIO1 (engine-running), GPIO2 (door), and GPIO3 (ignition). The TILS sensor uses I²C SDA GPIO6, SCL GPIO7, and auto-detects the MMA8452Q at address `0x1C` or `0x1D`.
 
-## BLE (V1 backward compatible)
+GPIO10 is reserved for the waterproof DS18B20 coolant-temperature probe.
+
+## BLE
 
 Service UUID: `D7F0A100-3E91-4C25-9D8A-001122334455`
 Command characteristic UUID: `D7F0A101-3E91-4C25-9D8A-001122334455`
 Status characteristic UUID: `D7F0A102-3E91-4C25-9D8A-001122334455`
 
-Write UTF-8 commands to the characteristic.
+Write UTF-8 commands to the command characteristic.
 
-## HTTP REST API (V2)
+## HTTP REST API
 
 Base URL: `http://192.168.4.1`
 
 ### `GET /api/status`
 
-Returns JSON vehicle state (poll every 1s):
+Returns JSON vehicle state:
 
 ```json
 {
   "locked": true,
   "engine": false,
+  "ignition": false,
   "headlights": false,
   "battery": 12.7,
   "temp": 84,
-  "signal": -52
+  "water_temp": 84,
+  "signal": -52,
+  "tiltPitch": 0.8,
+  "tiltRoll": -1.1,
+  "tiltValid": true,
+  "tiltStatus": "safe"
 }
 ```
 
@@ -51,32 +59,13 @@ Body: `{"command": "LOCK"}`
 - `IGNITION_OFF` - ignition off
 - `START_ENGINE` - crank starter
 - `STOP_ENGINE` - stop engine
-- `CALIBRATE_TILT` - save the current still, level position as the tilt zero point
-
-## Centralised action functions (ESP32 firmware)
-
-All transports call the same functions:
-
-```cpp
-void lockDoors();
-void unlockDoors();
-void ignitionOn();
-void ignitionOff();
-void startEngine();
-void stopEngine();
-void headlights(bool state);
-```
 
 ## Status broadcast
 
-ESP32 sends JSON status every second on both transports.
-
-Tilt status fields are included when the sensor is available: `tiltPitch`, `tiltRoll`, `tiltValid`, and `tiltStatus` (`safe`, `warning`, `danger`, or `unavailable`). Send `CALIBRATE_TILT` while the vehicle is parked level and still to save the current position as level.
-The app reads this to update the live dashboard.
+The app uses these canonical tilt fields: `tiltPitch`, `tiltRoll`, `tiltValid`, and `tiltStatus` (`safe`, `warning`, `danger`, or `unavailable`). The firmware may also provide extra raw accelerometer and legacy diagnostic fields, which the app can ignore.
 
 GPS shown in the app is supplied by the phone. The ESP32 does not provide independent GPS unless a separate GPS receiver is added.
 
 ## Safety
 
-All outputs default to safe/off state after reset or watchdog.
-Firmware reports sensed state where feedback exists, not echoed state.
+All relay outputs default to their inactive HIGH state after initialisation. Vehicle 12V signals must never connect directly to an ESP32-C6 GPIO; use the appropriate divider, optocoupler or signal-conditioning circuit for each input.

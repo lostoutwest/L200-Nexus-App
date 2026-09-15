@@ -8,29 +8,31 @@ Flutter dashboard for the L200 Nexus ACP vehicle controller.
 - Lock, unlock, ignition, starter, and headlights
 - Live battery, temperature, signal, and vehicle status
 - Live TILS tilt pitch/roll and Safe/Warning/Danger status
-- Persistent level-position tilt calibration
 - GPS location display
 
 ## Canonical hardware pinout
 
-The companion ESP32 firmware uses this current configuration:
+The companion firmware now targets an ESP32-C6 / ESP32-C6-MINI-1-class controller:
 
-| Function | ESP32 pin |
+| Function | ESP32-C6 pin |
 | :--- | :---: |
-| Lock relay (active-low) | GPIO16 |
-| Unlock relay (active-low) | GPIO17 |
-| Ignition relay (active-low) | GPIO18 |
-| Starter relay (active-low) | GPIO19 |
-| Headlights relay (active-low) | GPIO21 |
-| WS2812B RGB data | GPIO22 |
-| Engine-running input | GPIO34 |
-| Battery-sense input | GPIO35 |
-| Door-trigger input | GPIO32 |
-| Ignition input | GPIO33 |
-| TILS I²C SDA | GPIO25 |
-| TILS I²C SCL | GPIO26 |
+| Lock relay (active-low) | GPIO18 |
+| Unlock relay (active-low) | GPIO19 |
+| Ignition relay (active-low) | GPIO20 |
+| Starter relay (active-low) | GPIO21 |
+| Headlights relay (active-low) | GPIO22 |
+| SM16703P RGB data | GPIO23 |
+| Battery-sense ADC | GPIO0 |
+| Engine-running input | GPIO1 |
+| Door-trigger input | GPIO2 |
+| Ignition input | GPIO3 |
+| TILS I²C SDA | GPIO6 |
+| TILS I²C SCL | GPIO7 |
+| Reserved DS18B20 coolant probe | GPIO10 |
 
-Relay outputs are inactive HIGH. The ESP32 has no onboard GPS receiver; the dashboard’s GPS comes from the phone, while the operating system may improve its position using nearby Wi-Fi or Bluetooth signals.
+The MMA8452Q tilt sensor is detected at `0x1C` or `0x1D`.
+
+Relay outputs are inactive HIGH. Vehicle 12V signals must be conditioned before reaching an ESP32-C6 GPIO. The ESP32 has no onboard GPS receiver; the dashboard’s GPS comes from the phone.
 
 ## Development
 
@@ -44,5 +46,4 @@ flutter run
 The companion ESP32 firmware is maintained separately in
 [L200-Nexus-Firmware](https://github.com/lostoutwest/L200-Nexus-Firmware).
 
-The app expects the ESP32 to advertise as `L200-NEXUS` and uses the BLE and
-Wi-Fi protocol documented in [ESP32_PROTOCOL.md](ESP32_PROTOCOL.md).
+The app expects the ESP32 to advertise as `L200-NEXUS` and uses the BLE and Wi-Fi protocol documented in [ESP32_PROTOCOL.md](ESP32_PROTOCOL.md).
